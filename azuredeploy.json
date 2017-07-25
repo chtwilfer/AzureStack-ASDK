@@ -21,7 +21,7 @@
             "metadata": {
                 "description": "Username for the Virtual Machine."
             },
-            "defaultValue": "vmadmin1"
+            "defaultValue": "winadmin"
         },
         "adminPassword": {
             "type": "securestring",
