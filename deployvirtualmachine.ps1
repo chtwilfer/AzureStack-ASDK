@@ -43,9 +43,7 @@ param(
 
 )
 
-$TemplateFilePath = (Get-AutomationVariable -Name 'MRAutomationJSONUri') + '//win2016.json'
-$TemplateFilePathVNet = (Get-AutomationVariable -Name 'MRAutomationJSONUri') + '//vnet.json'
-$TemplateFilePathRG = (Get-AutomationVariable -Name 'MRAutomationJSONUri') + '//rg.json'
+$TemplateFilePath = (Get-AutomationVariable -Name 'MRAutomationJSONUri') + '//azuredeploy.json'
 
 $ErrorActionPreference = "Stop"
 
@@ -60,7 +58,6 @@ $sub = Select-AzureRmSubscription -SubscriptionId $SubscriptionId
 If (!$sub) {
     Throw "Subscription $SubscriptionId not available!"
 }
-
 
 # Step1: (ResourceGroup)
 
