@@ -6,7 +6,7 @@ This repository is for the automatic deployment of a virtual machine (E16s v2) i
 # Step 1:
 automaticlly create a virtual machine in azure, adds features, ...
 
-# Validate existing deployment templates
+Validate existing deployment templates
 You can verify if an existing deployment template is valid for a given environment with the Test-AzureRmResourceGroupDeployment PowerShell cmdlet. After connecting to your environment in a PowerShell session run the following PowerShell cmdlet
 
 Test-AzureRmResourceGroupDeployment -ResourceGroupName ExampleGroup -TemplateFile c:\Templates\azuredeploy.json
