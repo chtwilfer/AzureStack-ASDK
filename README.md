@@ -1,0 +1,1 @@
+# AzureStack-SingleNode
