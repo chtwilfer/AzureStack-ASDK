@@ -7,5 +7,8 @@ This repository is for the automatic deployment of a virtual machine (E16s v2) i
 automaticlly create a virtual machine in azure, adds features, ...
 
 # Step 2:
-download ASDK, extract it an copies some Folder to C:\. Changes some entries in the deploymednt scripts. Installs AzureStack
+download ASDK, extract it an copies some folder to C:\. Changes some entries in the deploymednt scripts. Installs AzureStack
+
+
+Who has interest in supporting the project?
 
