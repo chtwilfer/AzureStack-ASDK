@@ -182,7 +182,54 @@
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
-                    }
+                    },
+                    "dataDisks": [
+						{
+							"diskSizeGB": "[parameters('DataDiscSizeGB')]",
+							"lun": 0,
+							"name": "[variables('VirtualMachineDataDiskName')]",
+							"createOption": "Empty",
+							"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+								},
+							"caching": "Readwrite"
+						}
+                        ]
+                      "dataDisks": [
+						{
+							"diskSizeGB": "[parameters('DataDiscSizeGB')]",
+							"lun": 1,
+							"name": "[variables('VirtualMachineDataDiskName')]",
+							"createOption": "Empty",
+							"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+								},
+							"caching": "Readwrite"
+						},
+                    "dataDisks": [
+						{
+							"diskSizeGB": "[parameters('DataDiscSizeGB')]",
+							"lun": 2,
+							"name": "[variables('VirtualMachineDataDiskName')]",
+							"createOption": "Empty",
+							"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+								},
+							"caching": "Readwrite"
+						},
+                        ]
+                    "dataDisks": [
+						{
+							"diskSizeGB": "[parameters('DataDiscSizeGB')]",
+							"lun": 3,
+							"name": "[variables('VirtualMachineDataDiskName')]",
+							"createOption": "Empty",
+							"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+								},
+							"caching": "Readwrite"
+						},
+                     ]
                 },
                 "networkProfile": {
                     "networkInterfaces": [
