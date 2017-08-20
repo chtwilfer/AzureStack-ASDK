@@ -1,22 +1,20 @@
-# AzureStack-SingleNode with ASDK
-Installation on a Azure Virtual Machine (E16s v2)
+# Introduction 
+TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
 
-This repository is for the automatic deployment of a virtual machine (E16s v2) in Azure. Also installed are various Festures. ASDK is downloaded, some files and folders are stored locally on C: \. Then start the installation of AzureStack (nested Virtualization) ....
+# Getting Started
+TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
+1.	Installation process
+2.	Software dependencies
+3.	Latest releases
+4.	API references
 
-# Step 1:
-automaticlly create a virtual machine in azure, adds features, ...
+# Build and Test
+TODO: Describe and show how to build your code and run the tests. 
 
-Validate existing deployment templates.
-You can verify if an existing deployment template is valid for a given environment with the Test-AzureRmResourceGroupDeployment PowerShell cmdlet. After connecting to your environment in a PowerShell session run the following PowerShell cmdlet
+# Contribute
+TODO: Explain how other users and developers can contribute to make your code better. 
 
-Test-AzureRmResourceGroupDeployment -ResourceGroupName ExampleGroup -TemplateFile c:\Templates\azuredeploy.json
-
-Please note that this cmdlet does not verify the resource provider specific properties for the resources within the template. This cmdlet can be used for Microsoft Azure and Microsoft Azure Stack Developmetn Kit.
-
-
-# Step 2:
-download ASDK, extract it an copies some folder to C:\. Changes some entries in the deploymednt scripts. Installs AzureStack
-
-
-Who has interest in supporting the project?
-
+If you want to learn more about creating good readme files then refer the following [guidelines](https://www.visualstudio.com/en-us/docs/git/create-a-readme). You can also seek inspiration from the below readme files:
+- [ASP.NET Core](https://github.com/aspnet/Home)
+- [Visual Studio Code](https://github.com/Microsoft/vscode)
+- [Chakra Core](https://github.com/Microsoft/ChakraCore)
