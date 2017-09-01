@@ -1,20 +1,26 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# AzureStack-SingleNode with ASDK in ADFS MOde
+Installation on a Azure Virtual Machine (E16s v3)
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+This repository is for the automatic deployment of a virtual machine (E16s v3) in Azure. Also installed are various Festures. ASDK is downloaded, some files and folders are stored locally on C: \. Then start the installation of AzureStack (nested Virtualization) ....
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+# Step 1:
+Das Powershellscript "Deploy_Azure_Virtual_Machine.ps1" erstellt automatisch unter Angabe von diversen Paramtern eine virtuelle Maschine in der Größe E16 v3.
+Folgende Paramter werden bei Start des Scripts abgefragt:
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+ - ResourceGroup, 
+ - Location, 
+ - SubscriptionID, 
+ - VirtualMachineName, 
+ - StorageAccountName,
+ - DNSNameVirtualMachine
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://www.visualstudio.com/en-us/docs/git/create-a-readme). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+Ebenso werden dieser Maschine 4 weitere HDDs mit je 180 GB hinzugefügt. Die HDDs liegen im gleichen Storageaccount, wie die OS Disk.
+Die OS Disk wird von 127 GB (Standard) auf 256 GB vergrößert.
+Installiert wird ein Datacenter Image von Windows Server 2016.
+
+Nach dem Fertigstellen der Imageinstallation müssen noch diverse Fetures installiert werden. Das geschieht mit Powerrshellscript "Install_Features_on_Virtual_Machine.ps1"
+
+# Step 2:
+Ein zusätzliches Netzlaufwerk wird der virtuellen Maschine angefügt. In diesem Laufwerk liegen die aktuellen Installationsdateien und -ordner, die für die Installation von Azure Stack erforderlich sind. Diese werden mit dem Ausführen des Scipts "Deploy_Azure_Stack.ps1" an die passende Stelle kopiert. Ebneso werden weitere Einstellungen an der virtuellen Maschine vorgenommen. Zum Schluss startet dann die eigentliche AzureStack Installation.
+
+HAPPY TESTING!!!!
