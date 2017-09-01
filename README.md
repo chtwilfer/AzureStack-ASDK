@@ -1,4 +1,4 @@
-ck-SingleNode with ASDK in ADFS MOde
+# AzureStack-SingleNode with ASDK in ADFS MOde
 Installation on a Azure Virtual Machine (E16s v3)
 
 This repository is for the automatic deployment of a virtual machine (E16s v3) in Azure. Also installed are various Festures. ASDK is downloaded, some files and folders are stored locally on C: \. Then start the installation of AzureStack ....
@@ -24,3 +24,5 @@ Nach dem Fertigstellen der Imageinstallation müssen noch diverse Fetures instal
 Ein zusätzliches Netzlaufwerk wird der virtuellen Maschine angefügt. In diesem Laufwerk liegen die aktuellen Installationsdateien und -ordner, die für die Installation von Azure Stack erforderlich sind. Diese werden mit dem Ausführen des Scipts "Deploy_Azure_Stack.ps1" an die passende Stelle kopiert. Ebneso werden weitere Einstellungen an der virtuellen Maschine vorgenommen. Zum Schluss startet dann die eigentliche AzureStack Installation.
 
 HAPPY TESTING!!!!
+
+Copyright 2017 - Christian Twilfer
