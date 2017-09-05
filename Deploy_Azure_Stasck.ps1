@@ -12,11 +12,10 @@
     5. Install different Features
     ---------------------Scripte 2 ---------------------
     6. integrate Networkshare and copy files and folders
-    7. Change IP-Settings
-    8. Enable CredSSP
-    9. Install POC mit ADFS
-    10. Change BGBNAT Switch for external Internet Access [OPTIONAL]
-    11. Rerun the InstallScript
+    7. Change manually IP-Settings
+    8. Start ASDK-Installer.ps1
+    9. Change file in folder
+    10. Start Installation
 
  .NOTES
   Version:          1.0
@@ -33,20 +32,32 @@
 # Integrate Networkshare "installshare" and copy files and folders
 net use x: \\asdkfiles.file.core.windows.net\installshare  /u:AZURE\asdkfiles 57vSHmJhLvBtZ6J1/WzguHp9gqbpSsAgxU63vxArX6G4Q93meIY0iDXXQTMhCI0GBQq3ukGd2cNXUhW5FzDtvA==
 Copy-Item x:\* C:\
-# download some files and folders
-cd C:\CloudDeployment\Setup
-.\BoostrapAzureStackDeployment.ps1
+
 
 # Step 7:
-# change local Networksettings 
+# change manually local Networksettings 
 # IP-Adresse: 172.16.0.4, Subnetmask: 255.255.255.0, Gateway: 172.16.0.1, DNS: 8.8.8.8
 
-New-NetIPAddress -ifAlias Ethernet -IPAddress 172.16.0.5 -PrefixLength 24 -DefaultGateway 172.16.0.1
-Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses ("8.8.8.8")
-
-
 # Step 8:
-# Enable CredSSP
+# Start asdk-installer.ps1
+# Install POC with ADFS [NOT AAD]
+cd C:\ASDK-Installer\
+.\asdk-installer.ps1
+#Reboot after Assistent
+
+
+# Step 9:
+# change file BareMetal.Tests.ps1 from folder "modified-if necessary" in "C:\CloudDeployment\Roles\PhysicalMachines\Tests"
+
+
+# Step 10: Start Installation with ADFS
+cd C:\CloudDeployment\Setup
+.\InstallAzureStackPOC.ps1 -UseADFS -NATIPv4Subnet 172.16.0.0/24 -NATIPv4Address 172.16.0.5 -NATIPv4DefaultGateway 172.16.0.1 -Verbose
+
+
+########################################if necessary ########################################
+
+# Enable CredSSP - if necessary - change and then rerun .\InstallAzureStackPOC.ps1 -Rerun -Verbose
 Enable-WSManCredSSP -Role Server
 Set-Item wsman:localhost\client\trustedhosts -Value *
 Enable-WSManCredSSP -Role Client -DelegateComputer *
@@ -54,18 +65,13 @@ Enable-WSManCredSSP -Role Client -DelegateComputer *
 # Activate Allow Delegating Fresh Credentials with NTLM-only Server Authentication and add the value WSMAN/*. 
 
 
-# Step 9:
-# Install POC with ADFS [NOT AAD]
-cd C:\CloudDeployment\Setup
-.\InstallAzureStackPOC.ps1 -UseADFS -NATIPv4Subnet 172.16.0.0/24 -NATIPv4Address 172.16.0.5 -NATIPv4DefaultGateway 172.16.0.1 -Verbose
-
-########################################if necessary ########################################
-# Step 10:
 # Change BGBNAT Switch for external Internet  [OPTIONAL]
 New-VMSwitch -Name "NATSwitch" -SwitchType Internal -Verbose
 $NIC=Get-NetAdapter|Out-GridView -PassThru
 New-NetIPAddress -IPAddress 172.16.0.1 -PrefixLength 24 -InterfaceIndex $NIC.ifIndex
 New-NetNat -Name "NATSwitch" -InternalIPInterfaceAddressPrefix "172.16.0.0/24" –Verbose
 
-# Step 11:
+
+# Rerun the Installation
+cd C:\CloudDeploment\Setup
 .\InstallAzureStackPOC.ps1 -Rerun -Verbose
