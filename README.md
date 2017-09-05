@@ -23,6 +23,14 @@ Nach dem Fertigstellen der Imageinstallation müssen noch diverse Fetures instal
 # Step 2:
 Ein zusätzliches Netzlaufwerk wird der virtuellen Maschine angefügt. In diesem Laufwerk liegen die aktuellen Installationsdateien und -ordner, die für die Installation von Azure Stack erforderlich sind. Diese werden mit dem Ausführen des Scipts "Deploy_Azure_Stack.ps1" an die passende Stelle kopiert. Ebneso werden weitere Einstellungen an der virtuellen Maschine vorgenommen. Zum Schluss startet dann die eigentliche AzureStack Installation.
 
+# Step 3:
+Abschlussarbeiten nach der Installation von AzureStack, wie z.B. Password Experation, Resource Provider Registration, Install AuzreStack Powershell Modules, Verbindung zu einer Subscription und download eines Templates, etc. Watch Script: Steps_after_Install_AzureStack.ps1.
+
+# Sofern Kosten gespart werden müssen
+Es besteht die Möglichkeit den AzureStack SingleNode POC in Azure auch aus Kostengründen herunterzufahren. Dafür habe ich 2 weitere Scripte geschrieben. Watch: Shutdown_virt_machines_in_azure.ps1  und Start_virt_maschines_after_Boot.ps1 .
+
+# Die E16s_v3 Machine in Azure würde ca. 1400$ kosten, sofern sie 24/7 durchläuft. Fährt man diese in der Nacht herunter, dann fallen nur Kosten für den benötigten Storageplatz an.
+
 HAPPY TESTING!!!!
 
 Copyright 2017 - Christian Twilfer
