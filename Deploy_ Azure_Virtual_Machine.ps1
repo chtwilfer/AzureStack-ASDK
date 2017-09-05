@@ -15,11 +15,10 @@
     5. Install different Features
     ---------------------Scripte 2 ---------------------
     6. integrate Networkshare and copy files and folders
-    7. Change IP-Settings
-    8. Enable CredSSP
-    9. Install POC mit ADFS
-    10. Change BGBNAT Switch for external Internet Access [OPTIONAL]
-    11. Rerun the InstallScript
+    7. Change manually IP-Settings
+    8. Start ASDK-Installer.ps1
+    9. Change file in folder
+    10. Start Installation
 
     This Powershellscript (Script 1) deployes:
     1. a ResourceGroup
@@ -170,12 +169,6 @@ Write-Output "Virtual machine created"
 #Stops the Virtual Machine
 Write-Output "Virtual machine shutdown"
 Stop-AzureRmVM -ResourceGroupName $rgName -Name $vmName
-
-
-
-# Wait for 5 Minutes
-Write-Output "Wait 5 minutes for virtual machine shutdown"
-Start-Sleep -s 300
 
 
 #Add Data Disks - Suggest only adding same caching type at once and setup in Windows to avoid confusion 
