@@ -102,7 +102,7 @@ $stdStorageAccountName = $StorageAccountName
 
 # Set variables for VM
 $vmSize                = "Standard_E16s_v3"
-$newOSDiskSize         = "256"
+$newOSDiskSize         = "180"
 $publisher             = "MicrosoftWindowsServer"
 $offer                 = "WindowsServer"
 $sku                   = "2016-Datacenter"
@@ -190,12 +190,12 @@ Add-AzureRmVMDataDisk -CreateOption empty -DiskSizeInGB 180 -Name $vmName-Data4 
 Update-AzureRmVM -ResourceGroupName $rgname -VM $vmdiskadd
 
 
-#Rezises the OS Disk from 127GB to 256GB ($newOSDiskSize)
-Write-Output "Rezise the os disk to 256 GB"
+#Rezises the OS Disk from 127GB to 180GB ($newOSDiskSize)
+Write-Output "Rezise the os disk to 180 GB"
 $vm = Get-AzureRmVM -ResourceGroupName $rgName -Name $vmName
 $vm.StorageProfile.OSDisk.DiskSizeGB = $newOSDiskSize
 Update-AzureRmVM -ResourceGroupName $rgName -VM $vm
-Write-Output "OS Disk is now 256 GB"
+Write-Output "OS Disk is now 180 GB"
 
 
 #Starts the Virtual Machine
