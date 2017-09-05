@@ -29,7 +29,10 @@ Abschlussarbeiten nach der Installation von AzureStack, wie z.B. Password Expera
 # Sofern Kosten gespart werden müssen
 Es besteht die Möglichkeit den AzureStack SingleNode POC in Azure auch aus Kostengründen herunterzufahren. Dafür habe ich 2 weitere Scripte geschrieben. Watch: Shutdown_virt_machines_in_azure.ps1  und Start_virt_maschines_after_Boot.ps1 .
 
-# Die E16s_v3 Machine in Azure würde ca. 1400$ kosten, sofern sie 24/7 durchläuft. Fährt man diese in der Nacht herunter, dann fallen nur Kosten für den benötigten Storageplatz an.
+
+Die E16s_v3 Machine in Azure würde ca. 1400$ kosten, sofern sie 24/7 durchläuft. Fährt man diese in der Nacht herunter, dann fallen nur Kosten für den benötigten Storageplatz an.
+
+
 
 HAPPY TESTING!!!!
 
