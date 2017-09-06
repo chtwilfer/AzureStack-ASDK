@@ -33,7 +33,6 @@
 net use x: \\asdkfiles.file.core.windows.net\installshare  /u:AZURE\asdkfiles 57vSHmJhLvBtZ6J1/WzguHp9gqbpSsAgxU63vxArX6G4Q93meIY0iDXXQTMhCI0GBQq3ukGd2cNXUhW5FzDtvA==
 Copy-Item x:\* C:\
 
-
 # Step 7:
 # change manually local Networksettings 
 # IP-Adresse: 172.16.0.4, Subnetmask: 255.255.255.0, Gateway: 172.16.0.1, DNS: 8.8.8.8
@@ -43,12 +42,12 @@ Copy-Item x:\* C:\
 # Install POC with ADFS [NOT AAD]
 cd C:\ASDK-Installer\
 .\asdk-installer.ps1
-#Reboot after Assistent
-
+# do not Reboot the Azure Machine.
 
 # Step 9:
 # change file BareMetal.Tests.ps1 from folder "modified-if necessary" in "C:\CloudDeployment\Roles\PhysicalMachines\Tests"
 
+#Reboot the Azure Machine after Assistent
 
 # Step 10: Start Installation with ADFS
 cd C:\CloudDeployment\Setup
