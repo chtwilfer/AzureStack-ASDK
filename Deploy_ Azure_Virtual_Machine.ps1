@@ -9,16 +9,15 @@
     The Steps:
     --------------------Script 1 -----------------------
     1. Deploy a ResourceGroup, Windows VM 2016 Datacenter, VNet and NSG
-    2. Expand the OS Disk to 256 GB and add 4 disks per 180 GB of each disk, set the 4 disk online
+    2. (Expand the OS Disk to 180 GB and) add 4 disks per 180 GB of each disk, set the 4 disk online
     3. disable IE Enhanced Security Configuration
-    4. Rename Admin Username
-    5. Install different Features
+    4. (Rename Admin Username)
+    5. (Install different Features)
     ---------------------Scripte 2 ---------------------
     6. integrate Networkshare and copy files and folders
-    7. Change manually IP-Settings
-    8. Start ASDK-Installer.ps1
-    9. Change file in folder
-    10. Start Installation
+    7. Start ASDK-Installer.ps1
+    8. Change file in folder
+    9. Start Installation
 
     This Powershellscript (Script 1) deployes:
     1. a ResourceGroup
@@ -27,7 +26,7 @@
     4. a Storage Account
     5. a Virtual Machine
     6. 4 Data Disk in the Storage Account
-    7. Rezise OS Disk to 256 GB
+    7. (Rezise OS Disk to 180 GB)
     8. Starts the Virtual Machine
 
 
@@ -189,14 +188,14 @@ Add-AzureRmVMDataDisk -CreateOption empty -DiskSizeInGB 180 -Name $vmName-Data4 
 #Updates the VM with the disk config - does not require a reboot 
 Update-AzureRmVM -ResourceGroupName $rgname -VM $vmdiskadd
 
-
+<#
 #Rezises the OS Disk from 127GB to 180GB ($newOSDiskSize)
 Write-Output "Rezise the os disk to 180 GB"
 $vm = Get-AzureRmVM -ResourceGroupName $rgName -Name $vmName
 $vm.StorageProfile.OSDisk.DiskSizeGB = $newOSDiskSize
 Update-AzureRmVM -ResourceGroupName $rgName -VM $vm
 Write-Output "OS Disk is now 180 GB"
-
+#>
 
 #Starts the Virtual Machine
 Write-Output "Virtual machine starting"
