@@ -1,4 +1,4 @@
-# AzureStack-SingleNode with ASDK in ADFS Mode
+# AzureStack Development Kit in connected MOde
 Installation on a Azure Virtual Machine (E16s v3)
 
 This repository is for the automatic deployment of a virtual machine (E16s v3) in Azure. Also installed are various Festures. ASDK is downloaded, some files and folders are stored locally on C: \. Then start the installation of AzureStack ....
