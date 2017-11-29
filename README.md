@@ -27,6 +27,10 @@ An additional network drive is attached to the virtual machine. This drive conta
 # Step 3:
 Finishing work after installing AzureStack, such as Password Experation, Resource Provider Registration, Install AuzreStack Powershell Modules, connect to a subscription and download a template, etc. WatchScript: Steps_after_Install_AzureStack.ps1.
 
+# Step 4:
+If you want to Install the SQL and MySQL Resource Provider use the Script: Deploy_the_SQL_Resource_Provider.ps1 /  
+Deploy_the_MySQL_Resource_Provider.ps1 .
+
 # If costs have to be saved
 It is also possible to shut down the AzureStack SingleNode POC in Azure for reasons of cost. For that I wrote 2 more scripts. Watch: Shutdown_virt_machines_in_azure.ps1 and Start_virt_maschines_after_Boot.ps1.
 
