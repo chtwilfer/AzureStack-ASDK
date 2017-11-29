@@ -14,10 +14,8 @@
     4. (Rename Admin Username)
     5. (Install different Features)
     ---------------------Scripte 2 ---------------------
-    6. integrate Networkshare and copy files and folders
+    6. Download ASDK
     7. Start ASDK-Installer.ps1
-    8. Change file in folder
-    9. Start Installation
 
     This Powershellscript (Script 1) deployes:
     1. a ResourceGroup
