@@ -8,19 +8,7 @@
     1. Reset the password expiration to 180 days
     2. Register Azure Stack with your Azure Subscription
     3. Connect to AzureStack
-    4. Make virtual machines available to your Azure Stack users
-    5. Install PowerShell for Azure Stack
-    6. Uninstall existing versions of PowerShell
-    7. Install PowerShell in a disconnected or in a partially connected scenario
-    8. Download Azure Stack tools from GitHub
-    9. Active Directory Federation Services (AD FS) based deployments
-    10. Register resource providers
-    11. Test the connectivity
-    12. Configure the Azure Stack operator's PowerShell environment
-    13. Test the connectivity
-    14. Deploy templates in Azure Stack using PowerShell
-    
-
+  
  .NOTES
   Version:          1.0
   Author:           Christian Twilfer (c.twilfer@tec-networks.de]
