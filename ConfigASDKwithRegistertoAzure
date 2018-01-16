@@ -1,0 +1,344 @@
+<#
+
+.SYNOPSYS
+
+    The purpose of this script is to automate as much as possible post deployment tasks in Azure Stack Development Kit, registered with Azure
+    This include :
+        - Register to Azure
+        - Set password expiration
+        - Disable windows update on all infrastructures VMs and ASDK host
+        - Download Windows 2016 Datacenter Core, Windows 2016 Datacenter and SQL Extension from the Azure Marketplace
+        - MySQL Resource Provider Installation
+        - SQL Resource Provider Installation
+        - Tools installation (git, azstools, Azure Stack PS module)
+
+            LATER
+            - AppService prerequisites installation (sql server and file server)
+            - AppService Resource Provider sources download and certificates generation
+            - Set new default Quotas for Compute, Network, Storage and keyvault
+
+.AUTHOR
+
+    Christian Twilfer
+    Email c.twilfer@orangenet.de
+
+.VERSION
+
+    1.0 from 10.01.2018
+
+#>
+
+## Paramter
+
+param(
+
+ [Parameter(Mandatory=$True)]
+ [string] $LocalAdminPassword,
+ # Password of "azurestack\azurestackadmin"
+
+ [Parameter(Mandatory=$True)]
+ [string] $AADAdminName,
+ # AdminName of xx@xx.onmicrosoft.com
+
+ [Parameter(Mandatory=$True)]
+ [string] $AADAdminPassword,
+ # Password of the Admin from xx@xx.onmicrosoft.com
+
+ [Parameter(Mandatory=$True)]
+ [string] $AdminUsername
+
+)
+
+## Register to Azure
+
+# Install Powershell
+Set-PSRepository `
+  -Name "PSGallery" `
+  -InstallationPolicy Trusted
+Get-Module -ListAvailable | where-Object {$_.Name -like “Azure*”} | Uninstall-Module
+
+# Install the AzureRM.Bootstrapper module. Select Yes when prompted to install NuGet 
+Install-Module `
+  -Name AzureRm.BootStrapper
+
+# Install and import the API Version Profile required by Azure Stack into the current PowerShell session.
+Use-AzureRmProfile `
+  -Profile 2017-03-09-profile -Force
+Install-Module `
+  -Name AzureStack `
+  -RequiredVersion 1.2.10
+ 
+# Login to Azure
+Login-AzureRmAccount -EnvironmentName "AzureCloud"
+Register-AzureRmResourceProvider -ProviderNamespace Microsoft.AzureStack
+
+# Import Register Module
+Import-Module D:\AzSScripts\RegisterWithAzure.psm1 -Force -Verbose
+
+# Register
+Add-AzsRegistration -CloudAdminCredential azurestack\azurestackadmin -AzureDirectoryTenantName ariedllive.onmicrosoft.com -AzureSubscriptionId a2760766-3d5d-4f42-a07f-2ea821af38ba -PrivilegedEndpoint AzS-ERCS01 -BillingModel Development
+
+
+## more variables but they should not be changed
+
+$ERCSip = "192.168.200.225"
+$vmLocalAdminPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+$AZDCredential = Get-Credential -Credential Azurestack\AzurestackAdmin
+if ($AAD) {
+$Azscredential = Get-Credential -Message "Enter your Azure Stack Service Administrator credentials xx@xx.onmicrosoft.com"
+$azureDirectoryTenantName = Read-Host -Prompt "Specify your Azure AD Tenant Directory Name for Azure Stack"
+}
+else {
+$Azscredential = $AZDCredential
+}
+
+
+## set password expiration to 180 days
+Write-host "Configuring password expiration policy"
+Set-ADDefaultDomainPasswordPolicy -MaxPasswordAge 180.00:00:00 -Identity azurestack.local
+Get-ADDefaultDomainPasswordPolicy
+
+
+## Disable Server Manager at Logon
+Write-Host "Disabling Server Manager at logon..."
+Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
+
+
+## Disable IE ESC
+Write-Host "Disabling IE Enhanced Security Configuration (ESC)."
+$AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
+$UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
+Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
+Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
+Stop-Process -Name explorer -Force
+Write-Host "IE Enhanced Security Configuration (ESC) has been disabled."
+
+
+## Set Power Policy
+Write-Host "Optimizing power policy for high performance"
+POWERCFG.EXE /S SCHEME_MIN
+
+
+## Disable Windows update on infrastructure VMs and host
+Write-Host "Disabling Windows Update on Infrastructure VMs and ASDK Host"
+$AZSvms = get-vm -Name AZS*
+$scriptblock = {
+sc.exe config wuauserv start=disabled
+Get-Service -Name wuauserv | fl StartType,Status
+}
+foreach ($vm in $AZSvms) {
+Invoke-Command -VMName $vm.name -ScriptBlock $scriptblock -Credential Azurestack\AzurestackAdmin
+}
+sc.exe config wuauserv start=disabled
+
+
+## Download git
+Write-host "installing Git"
+install-script install-gitscm -Force
+install-gitscm.ps1
+
+
+## Download AZSTools from my fork for Windows Datacenter Core sku fix
+Write-host "Downloading AzureStack-Tools"
+cd \
+git clone https://github.com/alainv-msft/AzureStack-Tools.git
+
+
+## Install MySQL Resource Provider
+Write-host "downloading and installing MySQL resource provider"
+Login-AzureRmAccount -EnvironmentName "AzureCloud"
+Invoke-WebRequest https://aka.ms/azurestackmysqlrp -OutFile "D:\AzureStack\AzureStackMySQLPlattform\MySql.zip"
+cd D:\AzureStack\AzureStackMySQLPlattform
+expand-archive D:\AzureStack\AzureStackMySQLPlattform\MySql.zip -DestinationPath .\MySQL -Force
+cd D:\AzureStack\AzureStackMySQLPlattform\MySQL
+
+# Install the AzureRM.Bootstrapper module, set the profile, and install AzureRM and AzureStack modules
+Install-Module -Name AzureRm.BootStrapper -Force
+Use-AzureRmProfile -Profile 2017-03-09-profile
+Install-Module -Name AzureStack -RequiredVersion 1.2.11 -Force
+
+# Use the NetBIOS name for the Azure Stack domain. On ASDK, the default is AzureStack
+$domain = "AzureStack"
+
+# Point to the directory where the RP installation files were extracted
+$tempDir = 'D:\AzureStack\AzureStackMySQLPlattform\MySQL'
+
+# The service admin account (can be AAD or ADFS)
+$serviceAdmin = $AADAdminName #aadadmin@ariedllive.onmicrosoft.com
+$AdminPass = ConvertTo-SecureString $AADAdminPassword -AsPlainText -Force
+$AdminCreds = New-Object System.Management.Automation.PSCredential ($serviceAdmin, $AdminPass)
+
+# Set the credentials for the Resource Provider VM
+$vmLocalAdminPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+$vmLocalAdminCreds = New-Object System.Management.Automation.PSCredential ("sqlrpadmin", $vmLocalAdminPass)
+
+# and the cloudadmin credential required for Privileged Endpoint access
+$CloudAdminPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+$CloudAdminCreds = New-Object System.Management.Automation.PSCredential ("$domain\azurestackadmin", $CloudAdminPass)
+
+# change the following as appropriate
+$PfxPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+
+# Change directory to the folder where you extracted the installation files
+# and adjust the endpoints
+.$tempDir\DeployMySQLProvider.ps1 -AzCredential $AdminCreds -VMLocalCredential $vmLocalAdminCreds -CloudAdminCredential $CloudAdminCreds -PrivilegedEndpoint '192.168.200.225' -DefaultSSLCertificatePassword $PfxPass -DependencyFilesLocalPath $tempDir\cert
+
+
+## Install SQL Resource Provider
+Write-host "downloading and installing SQL resource provider"
+Login-AzureRmAccount -EnvironmentName "AzureCloud"
+cd D:\AzureStack\AzureStackSQLPlattform
+Invoke-WebRequest https://aka.ms/azurestacksqlrp -OutFile "D:\AzureStack\AzureStackSQLPlattform\sql.zip"
+expand-archive D:\AzureStack\AzureStackSQLPlattform\Sql.zip -DestinationPath .\SQL -Force
+cd D:\AzureStack\AzureStackSQLPlattform\SQL
+
+# Install the AzureRM.Bootstrapper module, set the profile, and install AzureRM and AzureStack modules
+Install-Module -Name AzureRm.BootStrapper -Force
+Use-AzureRmProfile -Profile 2017-03-09-profile
+Install-Module -Name AzureStack -RequiredVersion 1.2.11 -Force
+
+# Use the NetBIOS name for the Azure Stack domain. On ASDK, the default is AzureStack
+$domain = "AzureStack"
+
+# Point to the directory where the RP installation files were extracted
+$tempDir = 'D:\AzureStack\AzureStackSQLPlattform\SQL'
+
+# The service admin account (can be AAD or ADFS)
+$serviceAdmin = $AADAdminName
+$AdminPass = ConvertTo-SecureString $AADAdminPassword -AsPlainText -Force
+$AdminCreds = New-Object System.Management.Automation.PSCredential ($serviceAdmin, $AdminPass)
+
+# Set the credentials for the Resource Provider VM
+$vmLocalAdminPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+$vmLocalAdminCreds = New-Object System.Management.Automation.PSCredential ("sqlrpadmin", $vmLocalAdminPass)
+
+# and the cloudadmin credential required for Privileged Endpoint access
+$CloudAdminPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+$CloudAdminCreds = New-Object System.Management.Automation.PSCredential ("$domain\azurestackadmin", $CloudAdminPass)
+
+# change the following as appropriate
+$PfxPass = ConvertTo-SecureString $LocalAdminPassword -AsPlainText -Force
+
+# Change directory to the folder where you extracted the installation files
+# and adjust the endpoints
+.$tempDir\DeploySQLProvider.ps1 -AzCredential $AdminCreds -VMLocalCredential $vmLocalAdminCreds -CloudAdminCredential $CloudAdminCreds -PrivilegedEndpoint '192.168.200.225' -DefaultSSLCertificatePassword $PfxPass -DependencyFilesLocalPath $tempDir\cert
+
+
+## Register resources providers
+foreach($s in (Get-AzureRmSubscription)) {
+Select-AzureRmSubscription -SubscriptionId $s.SubscriptionId | Out-Null
+Write-Progress $($s.SubscriptionId + " : " + $s.SubscriptionName)
+Get-AzureRmResourceProvider -ListAvailable | Register-AzureRmResourceProvider }
+
+
+## Plans, Offers and App Service Installation
+<#
+## deploy prerequisites for app service
+Write-Host "deploying file server"
+New-AzureRmResourceGroup -Name appservice-fileshare -Location local
+New-AzureRmResourceGroupDeployment -Name fileshareserver -ResourceGroupName appservice-fileshare -TemplateUri https://raw.githubusercontent.com/alainv-msft/Azure-Stack/master/Templates/appservice-fileserver-standalone/azuredeploy.json -adminPassword $vmLocalAdminPass -fileShareOwnerPassword $vmLocalAdminPass -fileShareUserPassword $vmLocalAdminPass -Mode Incremental -Verbose 
+Write-Host "deploying sql server for appservice"
+New-AzureRmResourceGroup -Name appservice-sql -Location local
+New-AzureRmResourceGroupDeployment -Name sqlapp -ResourceGroupName appservice-sql -TemplateUri https://raw.githubusercontent.com/alainv-msft/Azure-Stack/master/Templates/SQL2014/azuredeploy.json -adminPassword $vmlocaladminpass -adminUsername "cloudadmin" -windowsOSVersion "2016-Datacenter" -vmName "sqlapp" -dnsNameForPublicIP "sqlapp" -Mode Incremental -Verbose
+
+# install App Service To be added
+Write-host "downloading appservice installer"
+cd C:\Temp
+Invoke-WebRequest https://aka.ms/appsvconmashelpers -OutFile "c:\temp\appservicehelper.zip"
+Expand-Archive C:\Temp\appservicehelper.zip -DestinationPath .\AppService\ -Force
+Invoke-WebRequest https://aka.ms/appsvconmasinstaller -OutFile "c:\temp\AppService\appservice.exe"
+Write-Host "generating certificates"
+cd C:\Temp\AppService
+.\Create-AppServiceCerts.ps1 -PfxPassword $vmLocalAdminPass -DomainName "local.azurestack.external"
+.\Get-AzureStackRootCert.ps1 -PrivilegedEndpoint $ERCSip -CloudAdminCredential $AZDCredential
+
+
+## Configure a simple base plan and offer for IaaS
+Import-Module C:\AzureStack-Tools\Connect\AzureStack.Connect.psm1
+Import-Module C:\AzureStack-Tools\ServiceAdmin\AzureStack.ServiceAdmin.psm1
+Login-AzureRmAccount -EnvironmentName "AzureCloud"
+
+
+## Default quotas, plan, and offer
+$PlanName = "CorePlanStandard"
+$OfferName = "CoreOfferStandard"
+$RGName = "CorePlansandOffers"
+$Location = (Get-AzsLocation).Name
+
+$computeParams = @{
+Name = "corecomputedefault"
+CoresLimit = 200
+AvailabilitySetCount = 20
+VirtualMachineCount = 100
+VmScaleSetCount = 20
+Location = $Location
+}
+
+$netParams = @{
+Name = "corenetdefault"
+PublicIpsPerSubscription = 500
+VNetsPerSubscription = 500
+GatewaysPerSubscription = 10
+ConnectionsPerSubscription = 20
+LoadBalancersPerSubscription = 500
+NicsPerSubscription = 1000
+SecurityGroupsPerSubscription = 500
+Location = $Location
+}
+
+$storageParams = @{
+Name = "corestoragedefault"
+NumberOfStorageAccounts = 200
+CapacityInGB = 2048
+Location = $Location
+}
+
+$kvParams = @{
+Location = $Location
+}
+
+$quotaIDs = @()
+$quotaIDs += (New-AzsNetworkQuota @netParams).ID
+$quotaIDs += (New-AzsComputeQuota @computeParams).ID
+$quotaIDs += (New-AzsStorageQuota @storageParams).ID
+$quotaIDs += (Get-AzsKeyVaultQuota @kvParams)
+
+New-AzureRmResourceGroup -Name $RGName -Location $Location
+$plan = New-AzsPlan -Name $PlanName -DisplayName $PlanName -ArmLocation $Location -ResourceGroupName $RGName -QuotaIds $QuotaIDs
+New-AzsOffer -Name $OfferName -DisplayName $OfferName -State Public -BasePlanIds $plan.Id -ResourceGroupName $RGName -ArmLocation $Location
+#>
+
+
+## Install useful ASDK Host Apps via Chocolatey
+Set-ExecutionPolicy Unrestricted -Force
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+## Enable Choco Global Confirmation
+Write-host "Enabling global confirmation to streamline installs"
+choco feature enable -n allowGlobalConfirmation
+
+## Visual Studio Code
+Write-host "Installing VS Code with Chocolatey"
+choco install visualstudiocode
+
+## Putty
+Write-host "Installing Putty with Chocolatey"
+choco install putty.install
+
+## WinSCP
+Write-host "Installing WinSCP with Chocolatey"
+choco install winscp.install 
+
+## Chrome
+Write-host "Installing Chrome with Chocolatey"
+choco install googlechrome
+
+## Azure CLI
+Write-host "Installing latest version of Azure CLI"
+invoke-webrequest https://aka.ms/InstallAzureCliWindows -OutFile C:\AzureCLI.msi
+msiexec.exe /qb-! /i C:\AzureCli.msi
+Write-host "Setting Execution Policy back to RemoteSigned"
+Set-ExecutionPolicy RemoteSigned -Confirm:$false -Force
+
+## END
+
