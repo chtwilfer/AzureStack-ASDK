@@ -32,4 +32,4 @@ The E16s_v3 machine in Azure would cost about $ 1400, as long as it runs 24/7. I
 
 HAPPY TESTING!!!!
 
-Copyright 2017 - Christian Twilfer
+Copyright 2018 - Christian Twilfer
