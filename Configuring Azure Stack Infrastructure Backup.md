@@ -1,56 +1,145 @@
-## Configure Azure Stack infrastructure backup
+# Configuring Azure Stack Infrastructure Backup
 
-In this exercise, you will prepare configure Azure Stack infrastructure backup:
-1. Create a backup user
-2. Create a backup share
-3. Generate an encryption key
-4. Configure backup controller
+## Task 1: Create a backup user
 
-
-# Task 1: Create a backup user
-In this task, which you will complete on the AZS-HOST machine, you will:
--       Create a backup user
 
 Open a Remote Desktop (RDP) session to the AZS-HOST machine by launching the RDP client (mstsc.exe) and connecting with the following parameters:
 Computer: azs-host.azurestack.local
 Username: azurestackadmin
 Password: Pa55w.rd
 
-Click Start, in the Start menu, expand the Windows Administrative Tools folder, and click Active Directory Administrative Center.  
-In Active Directory Administrative Center, click azurestack (local) and, in the main window pane, click the Users container.
-In the Tasks pane, in the Users section, click New and then click User.
-In the Create User window, specify the following settings and click OK:
-Full name: AzS-BackupOperator
-User UPN logon: AzS-BackupOperator@azurestack.local
-User SamAccountName logon: azurestack\AzS-BackupOperator
-Password: Pa55w.rd
-Confirm password: Pa55w.rd
-Password options: Password never expires
+
+1. Click Start, in the Start menu, expand the Windows Administrative Tools folder, and click Active Directory Administrative Center.  
+2. In Active Directory Administrative Center, click azurestack (local) and, in the main window pane, click the Users container.
+3. In the Tasks pane, in the Users section, click New and then click User.
+4. In the Create User window, specify the following settings and click OK:
+	Full name: AzS-BackupOperator
+	User UPN logon: AzS-BackupOperator@azurestack.local
+	User SamAccountName logon: azurestack\AzS-BackupOperator
+	Password: Pa55w.rd
+	Confirm password: Pa55w.rd
+	Password options: Password never expires
  
 
-# Task 2: Create a backup share
+## Task 2: Create a backup share
 
-In this task, you will:
--       Create a backup share. Note that in non-lab scenarios, this share would be external to the Azure Stack deployment. In this lab, for the simplicity sake, you will create it directly on the Azure Stack host.
+1. On the AZS-HOST VM, start File Explorer. 
+2. In File Explorer, create a new folder C:\Backup.
+3. Right-click Backup and, in the right-click menu, click Properties.
+4. In the Backup Properties window, click the Sharing tab and then click Advanced Sharing.
+5. In the Advanced Sharing dialog box, click Share this folder and then click Permissions.
+6. In the Permissions for Backup window, ensure that the Everyone entry is selected and then click Remove.
+7. Click Add, in the Select Users, Computers, Service Accounts, or Groups dialog box, type AzS-BackupOperator and click OK.
+8. Ensure that the AzS-BackupOperator entry is selected and click the Full Control checkbox in the Allow column.
+9. Click Add, in the Select Users, Computers, Service Accounts, or Groups dialog box, click Locations. 
+10. In the Locations dialog box, click the entry representing the local computer (AZS-HOST) and click OK.
+11. In the Enter the object names to select text box, type Administrators and click OK.
+10. Ensure that the Administrators entry is selected and click the Full Control checkbox in the Allow column.
+11. Click OK.
+12. Back in the Advanced Sharing dialog box, click OK.
+13. Back in the Backup Properties window, click the Security tab. 
+14. Click Edit.
+15. In the Permissions for Backup dialog box, Click Add
+16. In the Enter the object names to select text box, type AzS-BackupOperator and click OK.
+17. In the Permissions for AzS-BackupOperator pane, click Full Control in the Allow column and then click OK.
+18. Back in the Backup Properties window, click Close.
+19. Now minimize the Remote Desktop (RDP) window and return the lab VM machine for the remaining steps in this lab.
+ 
 
-On the AZS-HOST VM, start File Explorer. 
-In File Explorer, create a new folder C:\Backup.
-Right-click Backup and, in the right-click menu, click Properties.
-In the Backup Properties window, click the Sharing tab and then click Advanced Sharing.
-In the Advanced Sharing dialog box, click Share this folder and then click Permissions.
-In the Permissions for Backup window, ensure that the Everyone entry is selected and then click Remove.
-Click Add, in the Select Users, Computers, Service Accounts, or Groups dialog box, type AzS-BackupOperator and click OK.
-Ensure that the AzS-BackupOperator entry is selected and click the Full Control checkbox in the Allow column.
-Click Add, in the Select Users, Computers, Service Accounts, or Groups dialog box, click Locations. 
-In the Locations dialog box, click the entry representing the local computer (AZS-HOST) and click OK.
-In the Enter the object names to select text box, type Administrators and click OK.
-Ensure that the Administrators entry is selected and click the Full Control checkbox in the Allow column.
-Click OK.
-Back in the Advanced Sharing dialog box, click OK.
-Back in the Backup Properties window, click the Security tab. 
-Click Edit.
-In the Permissions for Backup dialog box, Click Add
-In the Enter the object names to select text box, type AzS-BackupOperator and click OK.
-In the Permissions for AzS-BackupOperator pane, click Full Control in the Allow column and then click OK.
-Back in the Backup Properties window, click Close.
-Now minimize the Remote Desktop (RDP) window and return the lab VM machine for the remaining steps in this lab.
+Task 3: Generate an encryption key
+
+Start Windows PowerShell ISE as administrator.
+From the Administrator: Windows PowerShell ISE window, run the following script:
+
+$tempEncryptionKeyString = ""
+foreach ($i in 1..64) {
+            $tempEncryptionKeyString += -join ((65..90) + (97..122) | 
+Get-Random | 
+% {[char]$_})
+}
+$tempEncryptionKeyBytes = ` [System.Text.Encoding]::UTF8.GetBytes($tempEncryptionKeyString)
+$BackupEncryptionKeyBase64 = ` [System.Convert]::ToBase64STring($tempEncryptionKeyBytes)
+            $BackupEncryptionKeyBase64
+
+Note the value generated by the script. This is the encryption key you will use when configuring backups. You should store it securely since the knowledge of the encryption key is necessary when performing cloud recovery.
+
+
+## Task 4: Configure backup controller
+
+
+1. Start Internet Explorer and navigate to the Azure Stack administrator portal
+2. In the Azure Stack administrator portal, click More services. 
+3. In the OTHER section, click Infrastructure backup.
+4. On the Infrastructure backup blade, click Configuration
+5. On the Backup Controller Settings blade, specify the following settings and click OK:
+6. Backup storage location: \\AzS-HOST.azurestack.local\Backup\AzSBackups\azurestack.local\local
+	Username: AzS-BackupOperator@azurestack.local
+	Password: Pa55w.rd
+	Confirm password: Pa55w.rd
+	Encryption Key: paste here the value of the encryption key you generated in the previous task
+
+ 
+
+# Download and review Azure Stack infrastructure backup Windows PowerShell cmdlets
+
+In this exercise, you will download and review Azure Stack infrastructure backup Windows PowerShell cmdlets:
+
+1. Download updated Azure Stack Tools modules
+2. Review Azure Stack infrastructure backup cmdlets
+
+## Task 1: Download updated Azure Stack Tools modules
+
+From the lab VM, start Internet Explorer and navigate to https://github.com/Azure/AzureStack-Tools 
+On the Azure/ AzureStack Tools page, click Branch: master and, in the drop-down list, click brbartle/registerwithmodule.
+
+Click Clone or download and then click Download ZIP.
+When prompted whether to open or save the .zip file, click Save.
+Once the download completes, click Open folder. This will open File Explorer displaying the downloaded .zip file.
+Extract the content of the .zip file into C:\
+ 
+
+## Task 2: Review Azure Stack infrastructure backup cmdlets
+
+Start Windows PowerShell ISE as administrator.
+From the Administrator: Windows PowerShell ISE window, run the following to download and install necessary AzureRm and Azure Stack PowerShell modules:
+
+Install-Module -Name AzureRm.BootStrapper
+Use-AzureRmProfile -Profile 2017-03-09-profile -Force
+Install-Module –Name AzureStack –RequiredVersion 1.2.10
+
+Next, connect to Azure Stack Admin endpoint by running:
+
+Set-Location -Path ‘C:\AzureStack-Tools-brbartle-registerwithmodule’
+Get-ChildItem –Path ‘.\’ –Recurse –File | Unblock-File
+ 
+Import-Module –Name .\Connect\AzureStack.Connect.psm1
+Import-Module –Name .\ComputeAdmin\AzureStack.ComputeAdmin.psm1
+ 
+Add-AzureRmEnvironment –Name 'AzureStackAdmin' `
+             -ArmEndpoint 'https://adminmanagement.local.azurestack.external'
+ 
+Set-AzureRmEnvironment `
+            -Name 'AzureStackAdmin' `
+            -GraphAudience 'https://graph.local.azurestack.external/' `
+            -EnableAdfsAuthentication:$true
+ 
+$tenantID = Get-AzsDirectoryTenantId `
+            -ADFS `
+            -EnvironmentName 'AzureStackAdmin'
+ 
+$adminUserName = 'AzureStackAdmin@azurestack.local'
+$adminPassword = 'Pa55w.rd' | ConvertTo-SecureString –Force –AsPlainText
+$adminCredentials = New-Object PSCredential($adminUserName,$adminPassword)
+ 
+Login-AzureRmAccount –EnvironmentName 'AzureStackAdmin' `
+                         -TenantId $tenantID `
+                                    -Credential $adminCredentials
+
+From the Administrator: Windows PowerShell ISE window, run the following to review the available Azure Stack infrastructure backup cmdlets
+
+Import-Module –Name .\Infrastructure\AzureStack.Infra.psm1
+Get-Command –Name ‘*backup*’ –Module AzureStack.Infra
+
+Note that the listing contains Start-AzsBackup and Restore-AzsBackup. Running the first of these cmdlets at this point would initiate infrastructure backup using the settings you configured in the previous exercise. The second cmdlet would be used during cloud recovery.
+
+Optionally, you might consider running Start-AzsBackup.
