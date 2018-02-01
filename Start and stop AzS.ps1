@@ -25,4 +25,4 @@ Get-ActionStatus Start-AzureStack
 # to Test AzureStack
 Test-AzureStack
 
-End-pssession
+Exit-pssession
